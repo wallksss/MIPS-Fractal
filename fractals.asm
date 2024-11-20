@@ -13,7 +13,7 @@ frameBuffer: .space 0x100000 # 512 width x 512 height x 4 bytes = 1048576 bytes 
 
 .text
 main:
-    #definindo os pontos do triangulo maior
+    #DEFINICAO DE PONTOS DO PRIMEIRO TRIANGULO
     li $a0, 10 #x1
     li $a1, 501 #y1
     li $a2, 501 #x2
@@ -21,14 +21,17 @@ main:
     li $t0, 256 #x3
     li $t1, 10 #y3
     
-    #passagem de argumento pela pilha?
+    #AJUSTAR A PROFUNDIDADE
+    li $s7, 10 #depth = 3
+    
+    #PASSAGEM DE PARAMETRO PELA PILHA
     addi $sp, $sp, -8
     sw $t0, 4($sp)
     sw $t1, 0($sp)
        
     jal draw_sierpinski
 
-    #saindo do programa
+    #SAI DO PROGRAMA
     li $v0, 10
     syscall	
 
@@ -37,8 +40,7 @@ draw_sierpinski:
     lw $t0, 4($sp)
     addi $sp, $sp, 8
 
-    
-    #desenho da primeira linha
+    #DESENHO PRIMEIRA LINHA
     addi $sp, $sp, -28
     sw $t0, 24($sp)
     sw $t1, 20($sp)
@@ -59,7 +61,7 @@ draw_sierpinski:
     lw $t0, 24($sp)
     addi $sp, $sp, 28
     
-    #desenho da segunda linha
+    #DESENHO SEGUNDA LINHA
     addi $sp, $sp, -28
     sw $t0, 24($sp)
     sw $t1, 20($sp)
@@ -82,7 +84,7 @@ draw_sierpinski:
     lw $t0, 24($sp)
     addi $sp, $sp, 28
     
-    #desenho da terceira linha
+    #DESENHO TERCEIRA LINHA
     addi $sp, $sp, -28
     sw $t0, 24($sp)
     sw $t1, 20($sp)
@@ -107,8 +109,367 @@ draw_sierpinski:
     lw $t0, 24($sp)
     addi $sp, $sp, 28
     
-    jr $ra
+    addi $sp, $sp, -32
+    sw $a0, 16($sp)
+    sw $a1, 12($sp)
+    sw $a2, 8($sp)
+    sw $a3, 4($sp)
+    sw $ra, 0($sp)
+ 
+    #REGISTRADORES TEMPORARIOS PARA REALIZAR AS CONTAS 
+    move $t2, $a0 #temp = x1
+    move $t3, $a1 #temp = y1
+    move $t4, $a2 #temp = x2
+    move $t5, $a3 #temp = y2
+    move $t6, $t0 #temp = x3
+    move $t7, $t1 #temp = y3
+    
+    #(x1 + x2) / 2	
+    add $a0, $t2, $t4
+    srl $a0, $a0, 1
+    #(y1 + y2) / 2
+    add $a1, $t3, $t5
+    srl $a1, $a1, 1
+    #(x1 + x3) / 2
+    add $a2, $t2, $t6
+    srl $a2, $a2, 1
+    #(y1 + y3) / 2
+    add $a3, $t3, $t7
+    srl $a3, $a3, 1
+    #(x2 + x3) / 2
+    add $t0, $t4, $t6
+    srl $t0, $t0, 1
+    #(y2 + y3) / 2
+    add $t1, $t5, $t7
+    srl $t1, $t1, 1
 
+    #PASSAGEM DE ARGUMENTOS PELA PILHA
+    li $t2, 1
+    sw $t0, 28($sp) #n
+    sw $t1, 24($sp) #y3
+    sw $t2, 20($sp) #x3
+            
+    jal sub_triangle
+
+    lw $ra, 0($sp)
+    lw $a3, 4($sp)
+    lw $a2, 8($sp)
+    lw $a1, 12($sp)
+    lw $a0, 16($sp)
+    lw $t1, 20($sp)
+    lw $t0, 24($sp)
+    addi $sp, $sp, 40
+    
+    jr $ra
+    
+sub_triangle:
+    #RECUPERANDO OS PARAMETROS QUE ESTAO NA PILHA
+    lw $t2, 20($sp) #x3
+    lw $t1, 24($sp) #y3
+    lw $t0, 28($sp) #n
+
+    #DESENHO PRIMEIRA LINHA
+    addi $sp, $sp, -32
+    sw $t0, 28($sp)
+    sw $t1, 24($sp)
+    sw $t2, 20($sp)
+    sw $a0, 16($sp)
+    sw $a1, 12($sp)
+    sw $a2, 8($sp)
+    sw $a3, 4($sp)
+    sw $ra, 0($sp)
+ 
+    jal draw_line
+
+    lw $ra, 0($sp)
+    lw $a3, 4($sp)
+    lw $a2, 8($sp)
+    lw $a1, 12($sp)	
+    lw $a0, 16($sp)
+    lw $t2, 20($sp)
+    lw $t1, 24($sp)
+    lw $t0, 28($sp)
+    addi $sp, $sp, 32
+    
+    #DESENHO SEGUNDA LINHA
+    addi $sp, $sp, -32
+    sw $t0, 28($sp)
+    sw $t1, 24($sp)
+    sw $t2, 20($sp)
+    sw $a0, 16($sp)
+    sw $a1, 12($sp)
+    sw $a2, 8($sp)
+    sw $a3, 4($sp)
+    sw $ra, 0($sp)
+ 
+    move $a2, $t0
+    move $a3, $t1
+    jal draw_line
+
+    lw $ra, 0($sp)
+    lw $a3, 4($sp)
+    lw $a2, 8($sp)
+    lw $a1, 12($sp)	
+    lw $a0, 16($sp)
+    lw $t2, 20($sp)
+    lw $t1, 24($sp)
+    lw $t0, 28($sp)
+    addi $sp, $sp, 32
+    
+    #DESENHO TERCEIRA LINHA
+    addi $sp, $sp, -32
+    sw $t0, 28($sp)
+    sw $t1, 24($sp)
+    sw $t2, 20($sp)
+    sw $a0, 16($sp)
+    sw $a1, 12($sp)
+    sw $a2, 8($sp)
+    sw $a3, 4($sp)
+    sw $ra, 0($sp)
+ 
+    move $a0, $a2
+    move $a1, $a3
+    move $a2, $t0
+    move $a3, $t1
+    jal draw_line
+
+    lw $ra, 0($sp)
+    lw $a3, 4($sp)
+    lw $a2, 8($sp)
+    lw $a1, 12($sp)	
+    lw $a0, 16($sp)
+    lw $t2, 20($sp)
+    lw $t1, 24($sp)
+    lw $t0, 28($sp)
+    addi $sp, $sp, 32
+
+    #INICIO RECURSAO
+    bge $t2, $s7, exit_recursion #caso base --> if(n < depth)
+    
+    #SALVA OS VALORES ATUAIS PARA SEREM RECUPERADOS QUANTO VOLTAR DA RECURSAO
+    addi $sp, $sp, -44
+    sw $t0, 40($sp)
+    sw $t1, 36($sp)
+    sw $t2, 32($sp)
+    sw $a0, 16($sp)
+    sw $a1, 12($sp)
+    sw $a2, 8($sp)
+    sw $a3, 4($sp)
+    sw $ra, 0($sp)
+ 
+    #PRIMEIRO SUB TRIANGULO
+    #(x1 + x2) / 2 + (x2 - x3) /2
+    add $t3, $a0, $a2
+    div $t3, $t3, 2
+    sub $t4, $a2, $t0
+    div $t4, $t4, 2
+    add $t3, $t3, $t4
+    
+    #(y1 + y2) / 2 + (y2 - y3) / 2
+    add $t4, $a1, $a3
+    div $t4, $t4, 2
+    sub $t5, $a3, $t1
+    div $t5, $t5, 2
+    add $t4, $t4, $t5 
+    
+    #(x1 + x2) / 2 + (x1 - x3) / 2
+    add $t5, $a0, $a2
+    div $t5, $t5, 2
+    sub $t6, $a0, $t0
+    div $t6, $t6, 2
+    add $t5, $t5, $t6
+    
+    #(y1 + y2) / 2 + (y1 - y3) / 2
+    add $t6, $a1, $a3
+    div $t6, $t6, 2
+    sub $t7, $a1, $t1
+    div $t7, $t7, 2
+    add $t6, $t6, $t7
+    
+    #(x1 + x2) / 2
+    add $t7, $a0, $a2
+    div $t7, $t7, 2
+    
+    #(y1 + y2) / 2
+    add $t8, $a1, $a3
+    div $t8, $t8, 2
+
+    move $a0, $t3
+    move $a1, $t4
+    move $a2, $t5
+    move $a3, $t6
+    move $t0, $t7
+    move $t1, $t8
+    addi $t2, $t2, 1
+    
+    #PASSAGEM DE PARAMETROS PELA PILHA
+    sw $t0, 28($sp)
+    sw $t1, 24($sp)
+    sw $t2, 20($sp)
+    
+    jal sub_triangle
+    
+    #RECUPERACAO DOS VALORES ATUAIS
+    lw $ra, 0($sp)
+    lw $a3, 4($sp)
+    lw $a2, 8($sp)
+    lw $a1, 12($sp)
+    lw $a0, 16($sp)
+    lw $t2, 32($sp)
+    lw $t1, 36($sp)
+    lw $t0, 40($sp)
+    addi $sp, $sp, 44
+    
+    #SEGUNDO SUB TRIANGULO
+    
+    #SALVA OS VALORES ATUAIS PARA SEREM RECUPERADOS QUANTO VOLTAR DA RECURSAO
+    addi $sp, $sp, -44
+    sw $t0, 40($sp)
+    sw $t1, 36($sp)
+    sw $t2, 32($sp)
+    sw $a0, 16($sp)
+    sw $a1, 12($sp)
+    sw $a2, 8($sp)
+    sw $a3, 4($sp)
+    sw $ra, 0($sp)
+    #(x3 + x2) / 2 + (x2 - x1) / 2
+    add $t3, $t0, $a2
+    div $t3, $t3, 2
+    sub $t4, $a2, $a0
+    div $t4, $t4, 2
+    add $t3, $t3, $t4
+    
+    #(y3 + y2) / 2 + (y2 - y1) / 2
+    add $t4, $t1, $a3
+    div $t4, $t4, 2
+    sub $t5, $a3, $a1
+    div $t5, $t5, 2
+    add $t4, $t4, $t5 
+    
+    #(x3 + x2) / 2 + (x3 - x1) / 2
+    add $t5, $t0, $a2
+    div $t5, $t5, 2
+    sub $t6, $t0, $a0
+    div $t6, $t6, 2
+    add $t5, $t5, $t6
+    
+    #(y3 + y2) / 2 + (y3 - y1) / 2
+    add $t6, $t1, $a3
+    div $t6, $t6, 2
+    sub $t7, $t1, $a1
+    div $t7, $t7, 2
+    add $t6, $t6, $t7
+    
+    #(x3 + x2) / 2
+    add $t7, $t0, $a2
+    div $t7, $t7, 2
+    
+    #(y3 + y2) / 2
+    add $t8, $t1, $a3
+    div $t8, $t8, 2
+
+    move $a0, $t3
+    move $a1, $t4
+    move $a2, $t5
+    move $a3, $t6
+    move $t0, $t7
+    move $t1, $t8
+    addi $t2, $t2, 1
+    
+    #PASSAGEM DE PARAMETROS PELA PILHA
+    sw $t0, 28($sp)
+    sw $t1, 24($sp)
+    sw $t2, 20($sp)
+    
+    jal sub_triangle
+    
+    #RECUPERACAO DOS VALORES ATUAIS
+    lw $ra, 0($sp)
+    lw $a3, 4($sp)
+    lw $a2, 8($sp)
+    lw $a1, 12($sp)
+    lw $a0, 16($sp)
+    lw $t2, 32($sp)
+    lw $t1, 36($sp)
+    lw $t0, 40($sp)
+    addi $sp, $sp, 44
+
+    #TERCEIRO SUB TRIANGULO
+    #SALVA OS VALORES ATUAIS PARA SEREM RECUPERADOS QUANTO VOLTAR DA RECURSAO
+    addi $sp, $sp, -44
+    sw $t0, 40($sp)
+    sw $t1, 36($sp)
+    sw $t2, 32($sp)
+    sw $a0, 16($sp)
+    sw $a1, 12($sp)
+    sw $a2, 8($sp)
+    sw $a3, 4($sp)
+    sw $ra, 0($sp)
+    #(x1 + x3) / 2 + (x3 - x2) / 2
+    add $t3, $a0, $t0
+    div $t3, $t3, 2
+    sub $t4, $t0, $a2
+    div $t4, $t4, 2
+    add $t3, $t3, $t4
+    
+    #(y1 + y3) / 2 + (y3 - y2) / 2
+    add $t4, $a1, $t1
+    div $t4, $t4, 2
+    sub $t5, $t1, $a3
+    div $t5, $t5, 2
+    add $t4, $t4, $t5 
+    
+    #(x1 + x3) / 2 + (x1 - x2) / 2
+    add $t5, $a0, $t0
+    div $t5, $t5, 2
+    sub $t6, $a0, $a2
+    div $t6, $t6, 2
+    add $t5, $t5, $t6
+    
+    #(y1 + y3) / 2 + (y1 - y2) / 2
+    add $t6, $a1, $t1
+    div $t6, $t6, 2
+    sub $t7, $a1, $a3
+    div $t7, $t7, 2
+    add $t6, $t6, $t7
+    
+    #(x1 + x3) / 2
+    add $t7, $a0, $t0
+    div $t7, $t7, 2
+    
+    #(y1 + y3) / 2
+    add $t8, $a1, $t1
+    div $t8, $t8, 2
+
+    move $a0, $t3
+    move $a1, $t4
+    move $a2, $t5
+    move $a3, $t6
+    move $t0, $t7
+    move $t1, $t8
+    addi $t2, $t2, 1
+    
+    #PASSAGEM DE PARAMETROS PELA PILHA
+    sw $t0, 28($sp)
+    sw $t1, 24($sp)
+    sw $t2, 20($sp)
+    
+    jal sub_triangle
+    
+    #RECUPERACAO DOS VALORES ATUAIS
+    lw $ra, 0($sp)
+    lw $a3, 4($sp)
+    lw $a2, 8($sp)
+    lw $a1, 12($sp)
+    lw $a0, 16($sp)
+    lw $t2, 32($sp)
+    lw $t1, 36($sp)
+    lw $t0, 40($sp)
+    addi $sp, $sp, 44
+    
+    exit_recursion:
+    jr $ra
+    
 draw_line:
     sub $s0, $a2, $a0 # dx = x1 - x0
     sub $s1, $a3, $a1 # dy = y1 - y0
@@ -174,5 +535,3 @@ ignore_if_dx:
 
 exit_loop:
     jr $ra
-
-
