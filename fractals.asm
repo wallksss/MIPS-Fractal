@@ -12,6 +12,55 @@
 frameBuffer: .space 0x100000 # 512 width x 512 height x 4 bytes = 1048576 bytes = 0x100000 bytes
 
 .text
+
+.macro save_registers
+    addi $sp, $sp, -32
+    sw $t0, 28($sp)
+    sw $t1, 24($sp)
+    sw $t2, 20($sp)
+    sw $a0, 16($sp)
+    sw $a1, 12($sp)
+    sw $a2, 8($sp)
+    sw $a3, 4($sp)
+    sw $ra, 0($sp)
+.end_macro
+
+.macro load_registers
+    lw $ra, 0($sp)
+    lw $a3, 4($sp)
+    lw $a2, 8($sp)
+    lw $a1, 12($sp)	
+    lw $a0, 16($sp)
+    lw $t2, 20($sp)
+    lw $t1, 24($sp)
+    lw $t0, 28($sp)
+    addi $sp, $sp, 32
+.end_macro
+
+.macro save_recursion_registers
+    addi $sp, $sp, -44
+    sw $t0, 40($sp)
+    sw $t1, 36($sp)
+    sw $t2, 32($sp)
+    sw $a0, 16($sp)
+    sw $a1, 12($sp)
+    sw $a2, 8($sp)
+    sw $a3, 4($sp)
+    sw $ra, 0($sp)
+.end_macro
+
+.macro load_recursion_registers
+    lw $ra, 0($sp)
+    lw $a3, 4($sp)
+    lw $a2, 8($sp)
+    lw $a1, 12($sp)
+    lw $a0, 16($sp)
+    lw $t2, 32($sp)
+    lw $t1, 36($sp)
+    lw $t0, 40($sp)
+    addi $sp, $sp, 44
+.end_macro
+
 main:
     #DEFINICAO DE PONTOS DO PRIMEIRO TRIANGULO
     li $a0, 10 #x1
@@ -41,73 +90,25 @@ draw_sierpinski:
     addi $sp, $sp, 8
 
     #DESENHO PRIMEIRA LINHA
-    addi $sp, $sp, -28
-    sw $t0, 24($sp)
-    sw $t1, 20($sp)
-    sw $a0, 16($sp)
-    sw $a1, 12($sp)
-    sw $a2, 8($sp)
-    sw $a3, 4($sp)
-    sw $ra, 0($sp)
- 
+    save_registers 
     jal draw_line
-
-    lw $ra, 0($sp)
-    lw $a3, 4($sp)
-    lw $a2, 8($sp)
-    lw $a1, 12($sp)
-    lw $a0, 16($sp)
-    lw $t1, 20($sp)
-    lw $t0, 24($sp)
-    addi $sp, $sp, 28
+    load_registers
     
     #DESENHO SEGUNDA LINHA
-    addi $sp, $sp, -28
-    sw $t0, 24($sp)
-    sw $t1, 20($sp)
-    sw $a0, 16($sp)
-    sw $a1, 12($sp)
-    sw $a2, 8($sp)
-    sw $a3, 4($sp)
-    sw $ra, 0($sp)
- 
+    save_registers
     move $a2, $t0
     move $a3, $t1
     jal draw_line
-
-    lw $ra, 0($sp)
-    lw $a3, 4($sp)
-    lw $a2, 8($sp)
-    lw $a1, 12($sp)
-    lw $a0, 16($sp)
-    lw $t1, 20($sp)
-    lw $t0, 24($sp)
-    addi $sp, $sp, 28
+    load_registers
     
     #DESENHO TERCEIRA LINHA
-    addi $sp, $sp, -28
-    sw $t0, 24($sp)
-    sw $t1, 20($sp)
-    sw $a0, 16($sp)
-    sw $a1, 12($sp)
-    sw $a2, 8($sp)
-    sw $a3, 4($sp)
-    sw $ra, 0($sp)
- 
+    save_registers
     move $a0, $a2
     move $a1, $a3
     move $a2, $t0
     move $a3, $t1
     jal draw_line
-
-    lw $ra, 0($sp)
-    lw $a3, 4($sp)
-    lw $a2, 8($sp)
-    lw $a1, 12($sp)
-    lw $a0, 16($sp)
-    lw $t1, 20($sp)
-    lw $t0, 24($sp)
-    addi $sp, $sp, 28
+    load_registers
     
     addi $sp, $sp, -32
     sw $a0, 16($sp)
@@ -169,93 +170,31 @@ sub_triangle:
     lw $t0, 28($sp) #n
 
     #DESENHO PRIMEIRA LINHA
-    addi $sp, $sp, -32
-    sw $t0, 28($sp)
-    sw $t1, 24($sp)
-    sw $t2, 20($sp)
-    sw $a0, 16($sp)
-    sw $a1, 12($sp)
-    sw $a2, 8($sp)
-    sw $a3, 4($sp)
-    sw $ra, 0($sp)
- 
+    save_registers 
     jal draw_line
-
-    lw $ra, 0($sp)
-    lw $a3, 4($sp)
-    lw $a2, 8($sp)
-    lw $a1, 12($sp)	
-    lw $a0, 16($sp)
-    lw $t2, 20($sp)
-    lw $t1, 24($sp)
-    lw $t0, 28($sp)
-    addi $sp, $sp, 32
+    load_registers
     
     #DESENHO SEGUNDA LINHA
-    addi $sp, $sp, -32
-    sw $t0, 28($sp)
-    sw $t1, 24($sp)
-    sw $t2, 20($sp)
-    sw $a0, 16($sp)
-    sw $a1, 12($sp)
-    sw $a2, 8($sp)
-    sw $a3, 4($sp)
-    sw $ra, 0($sp)
- 
+    save_registers
     move $a2, $t0
     move $a3, $t1
     jal draw_line
-
-    lw $ra, 0($sp)
-    lw $a3, 4($sp)
-    lw $a2, 8($sp)
-    lw $a1, 12($sp)	
-    lw $a0, 16($sp)
-    lw $t2, 20($sp)
-    lw $t1, 24($sp)
-    lw $t0, 28($sp)
-    addi $sp, $sp, 32
+    load_registers
     
     #DESENHO TERCEIRA LINHA
-    addi $sp, $sp, -32
-    sw $t0, 28($sp)
-    sw $t1, 24($sp)
-    sw $t2, 20($sp)
-    sw $a0, 16($sp)
-    sw $a1, 12($sp)
-    sw $a2, 8($sp)
-    sw $a3, 4($sp)
-    sw $ra, 0($sp)
- 
+    save_registers
     move $a0, $a2
     move $a1, $a3
     move $a2, $t0
     move $a3, $t1
     jal draw_line
-
-    lw $ra, 0($sp)
-    lw $a3, 4($sp)
-    lw $a2, 8($sp)
-    lw $a1, 12($sp)	
-    lw $a0, 16($sp)
-    lw $t2, 20($sp)
-    lw $t1, 24($sp)
-    lw $t0, 28($sp)
-    addi $sp, $sp, 32
+    load_registers
 
     #INICIO RECURSAO
     bge $t2, $s7, exit_recursion #caso base --> if(n < depth)
     
     #SALVA OS VALORES ATUAIS PARA SEREM RECUPERADOS QUANTO VOLTAR DA RECURSAO
-    addi $sp, $sp, -44
-    sw $t0, 40($sp)
-    sw $t1, 36($sp)
-    sw $t2, 32($sp)
-    sw $a0, 16($sp)
-    sw $a1, 12($sp)
-    sw $a2, 8($sp)
-    sw $a3, 4($sp)
-    sw $ra, 0($sp)
+    save_recursion_registers
  
     #PRIMEIRO SUB TRIANGULO
     #(x1 + x2) / 2 + (x2 - x3) /2
@@ -310,28 +249,12 @@ sub_triangle:
     jal sub_triangle
     
     #RECUPERACAO DOS VALORES ATUAIS
-    lw $ra, 0($sp)
-    lw $a3, 4($sp)
-    lw $a2, 8($sp)
-    lw $a1, 12($sp)
-    lw $a0, 16($sp)
-    lw $t2, 32($sp)
-    lw $t1, 36($sp)
-    lw $t0, 40($sp)
-    addi $sp, $sp, 44
+    load_recursion_registers
     
     #SEGUNDO SUB TRIANGULO
     
     #SALVA OS VALORES ATUAIS PARA SEREM RECUPERADOS QUANTO VOLTAR DA RECURSAO
-    addi $sp, $sp, -44
-    sw $t0, 40($sp)
-    sw $t1, 36($sp)
-    sw $t2, 32($sp)
-    sw $a0, 16($sp)
-    sw $a1, 12($sp)
-    sw $a2, 8($sp)
-    sw $a3, 4($sp)
-    sw $ra, 0($sp)
+    save_recursion_registers
     #(x3 + x2) / 2 + (x2 - x1) / 2
     add $t3, $t0, $a2
     div $t3, $t3, 2
@@ -384,27 +307,11 @@ sub_triangle:
     jal sub_triangle
     
     #RECUPERACAO DOS VALORES ATUAIS
-    lw $ra, 0($sp)
-    lw $a3, 4($sp)
-    lw $a2, 8($sp)
-    lw $a1, 12($sp)
-    lw $a0, 16($sp)
-    lw $t2, 32($sp)
-    lw $t1, 36($sp)
-    lw $t0, 40($sp)
-    addi $sp, $sp, 44
+    load_recursion_registers
 
     #TERCEIRO SUB TRIANGULO
     #SALVA OS VALORES ATUAIS PARA SEREM RECUPERADOS QUANTO VOLTAR DA RECURSAO
-    addi $sp, $sp, -44
-    sw $t0, 40($sp)
-    sw $t1, 36($sp)
-    sw $t2, 32($sp)
-    sw $a0, 16($sp)
-    sw $a1, 12($sp)
-    sw $a2, 8($sp)
-    sw $a3, 4($sp)
-    sw $ra, 0($sp)
+    save_recursion_registers
     #(x1 + x3) / 2 + (x3 - x2) / 2
     add $t3, $a0, $t0
     div $t3, $t3, 2
@@ -457,15 +364,7 @@ sub_triangle:
     jal sub_triangle
     
     #RECUPERACAO DOS VALORES ATUAIS
-    lw $ra, 0($sp)
-    lw $a3, 4($sp)
-    lw $a2, 8($sp)
-    lw $a1, 12($sp)
-    lw $a0, 16($sp)
-    lw $t2, 32($sp)
-    lw $t1, 36($sp)
-    lw $t0, 40($sp)
-    addi $sp, $sp, 44
+    load_recursion_registers
     
     exit_recursion:
     jr $ra
